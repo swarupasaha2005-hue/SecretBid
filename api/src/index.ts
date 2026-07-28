@@ -53,10 +53,9 @@ import { SecretBidPrivateState, createSecretBidPrivateState, setLocalBidSecret }
  * @remarks
  * Every method here is a thin wire-up to one circuit in `secretbid.compact` (or, for
  * `getAuction`/`getWinner`, a plain off-chain read of already-public ledger data — Midnight ledger
- * state does not require a transaction to read). `createAuction`, `commitBid`, and `startReveal` are
- * production-complete: each fully validates its input and mutates the ledger via its underlying
- * circuit. `revealBid` and `closeAuction` still wire up to placeholder circuits that perform minimal
- * ledger wiring only — no commitment-verification or winner-selection rules are enforced by them yet.
+ * state does not require a transaction to read). All five auction circuits — `createAuction`,
+ * `commitBid`, `startReveal`, `revealBid`, `closeAuction` — are production-complete: each fully
+ * validates its input and mutates the ledger via its underlying circuit.
  */
 export interface DeployedSecretBidAPI {
   readonly deployedContractAddress: ContractAddress;
@@ -231,12 +230,17 @@ export class SecretBidAPI implements DeployedSecretBidAPI {
   }
 
   /**
-   * Placeholder circuit call.
+   * Reveals a previously committed bid.
+   *
+   * @param auctionId The auction to reveal a bid for.
    *
    * @remarks
-   * Wires up to the `revealBid` circuit, which today reads the caller's locally-prepared bid secret
-   * back via the `localBidSecret` witness but does not yet verify it against a stored commitment,
-   * disclose the amount, or update the running winner.
+   * No bid data is passed in — the amount and nonce are retrieved automatically from
+   * `SecretBidPrivateState` (the same `{ amount, nonce }` recorded by an earlier `commitBid` call) and
+   * read by the circuit via the `localBidSecret` witness. Wires up to the production `revealBid`
+   * circuit in `secretbid.compact`, which verifies the commitment, discloses the amount into
+   * `revealedBids`, and updates the auction's running `winner`/`winningBid` if this bid qualifies. The
+   * nonce is never disclosed and never appears on the ledger.
    */
   async revealBid(auctionId: AuctionId): Promise<void> {
     this.logger?.info({ revealingBid: { auctionId } });
@@ -249,11 +253,17 @@ export class SecretBidAPI implements DeployedSecretBidAPI {
   }
 
   /**
-   * Placeholder circuit call.
+   * Finalizes an auction, locking it against any further reveals.
+   *
+   * @param auctionId The auction to close.
    *
    * @remarks
-   * Wires up to the `closeAuction` circuit, which today identifies the caller but does not yet check
-   * that they are the auction's creator, nor transition the auction's phase.
+   * Wires up to the production `closeAuction` circuit in `secretbid.compact`, which verifies the
+   * auction exists, that the caller is the auction's creator (identified via
+   * `deriveBidderKey(secretKey, auctionId)`), that the auction is currently in the REVEAL phase, and
+   * that every commitment has been accounted for (`revealCount == commitCount`) before flipping the
+   * phase to CLOSED. This circuit never recomputes the winner — `winner`/`winningBid` were already
+   * finalized incrementally by `revealBid` and are carried over unchanged.
    */
   async closeAuction(auctionId: AuctionId): Promise<void> {
     this.logger?.info({ closingAuction: { auctionId } });
