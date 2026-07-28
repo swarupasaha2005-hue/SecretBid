@@ -1,0 +1,111 @@
+/* This file is part of midnightntwrk/example-secretbid.
+ * Copyright (C) Midnight Foundation
+ * SPDX-License-Identifier: Apache-2.0
+ *
+ * Responsive rules for the SecretBid landing page. Kept as a plain
+ * stylesheet because inline React styles cannot express media queries.
+ */
+
+.secretbid-hero {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+}
+
+.secretbid-hero-image {
+  filter: none;
+}
+
+.secretbid-feature-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 24px;
+}
+
+.secretbid-steps-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 20px;
+  position: relative;
+}
+
+.secretbid-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 24px;
+}
+
+.secretbid-step-connector {
+  display: block;
+}
+
+@media (max-width: 960px) {
+  .secretbid-feature-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .secretbid-steps-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .secretbid-stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 860px) {
+  .secretbid-hero {
+    min-height: auto;
+  }
+  .secretbid-hero-content {
+    position: static !important;
+    min-height: auto !important;
+    padding: 140px 24px 32px !important;
+    order: 1;
+  }
+  .secretbid-hero-image-wrap {
+    position: static !important;
+    top: auto !important;
+    left: auto !important;
+    transform: none !important;
+    width: 92% !important;
+    margin: 0 auto 80px !important;
+    order: 2;
+  }
+  .secretbid-hero-overlay {
+    display: none !important;
+  }
+  .secretbid-hero-actions {
+    justify-content: center;
+  }
+  .secretbid-nav-links,
+  .secretbid-nav-right {
+    display: none !important;
+  }
+  .secretbid-nav-hamburger {
+    display: block !important;
+  }
+  .secretbid-nav-mobile-menu {
+    display: flex !important;
+  }
+  .secretbid-step-connector {
+    display: none;
+  }
+}
+
+@media (max-width: 640px) {
+  .secretbid-hero-content {
+    padding-top: 120px !important;
+  }
+  .secretbid-hero-image-wrap {
+    width: 96% !important;
+    margin-bottom: 60px !important;
+  }
+}
+
+@media (max-width: 640px) {
+  .secretbid-feature-grid,
+  .secretbid-steps-grid,
+  .secretbid-stats-grid {
+    grid-template-columns: 1fr;
+  }
+}

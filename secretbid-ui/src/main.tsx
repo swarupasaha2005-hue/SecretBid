@@ -24,8 +24,11 @@ import './globals';
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import { ThemeProvider } from '@mui/material';
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { setNetworkId, NetworkId } from '@midnight-ntwrk/midnight-js-network-id';
 import App from './App';
+import { LandingPage } from './pages/LandingPage';
+import { CreateAuctionPage } from './pages/CreateAuctionPage';
 import CssBaseline from '@mui/material/CssBaseline';
 import { theme } from './config/theme';
 import '@midnight-ntwrk/dapp-connector-api';
@@ -49,7 +52,13 @@ ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
     <CssBaseline />
     <ThemeProvider theme={theme}>
       <DeployedSecretBidProvider logger={logger}>
-        <App />
+        <BrowserRouter>
+          <Routes>
+            <Route path="/" element={<LandingPage />} />
+            <Route path="/app" element={<App />} />
+            <Route path="/create-auction" element={<CreateAuctionPage />} />
+          </Routes>
+        </BrowserRouter>
       </DeployedSecretBidProvider>
     </ThemeProvider>
   </React.StrictMode>,
