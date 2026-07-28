@@ -25,9 +25,8 @@ export interface AnimatedCounterProps {
 
 /**
  * Animates a number counting up from 0 to `value` once it scrolls into
- * view. Purely a display placeholder for the statistics section — these
- * are illustrative figures, not live protocol data (SecretBid does not add
- * any new business logic or data source in this redesign).
+ * view. Used to present real, live figures (e.g. protocol activity counts
+ * derived from `auctions$`) with a subtle count-up effect.
  */
 export const AnimatedCounter: React.FC<AnimatedCounterProps> = ({
   value,

@@ -21,22 +21,25 @@ import {
   Hero,
   FeatureCards,
   HowItWorks,
-  Stats,
+  ProtocolActivity,
+  RecentAuctions,
   CTASection,
   Footer,
 } from '../components/landing';
+import { useLandingAuctions } from '../hooks';
 
 /**
  * The SecretBid marketing landing page: a cinematic, premium Web3 landing
  * experience built entirely around `public/hero1.png`. Every visual here —
- * background glow, card surfaces, gradients — is UI-only presentation; no
- * protocol, API, or business logic lives in this component. "Explore
- * Auctions" / "Create Auction" / "Browse Auctions" all route through to the
- * existing SecretBid dashboard at `/app`, where the real wallet connection
- * and contract interactions happen.
+ * background glow, card surfaces, gradients — is UI-only presentation, with one exception: the
+ * "Protocol Activity" and "Recent Auctions" sections below display real, live auction data (via
+ * `useLandingAuctions`) whenever a SecretBid contract deployment is already connected. "Explore
+ * Auctions" / "Create Auction" / "Browse Auctions" all route through to the existing SecretBid
+ * dashboard at `/app`, where wallet connection and contract interactions happen.
  */
 export const LandingPage: React.FC = () => {
   const navigate = useNavigate();
+  const auctionsState = useLandingAuctions();
   const goToApp = () => navigate('/app');
   const goToCreateAuction = () => navigate('/create-auction');
   const goToNavLink = (label: string) => (label === 'Create Auction' ? goToCreateAuction() : goToApp());
@@ -51,7 +54,8 @@ export const LandingPage: React.FC = () => {
         <Hero onExploreAuctions={goToApp} onCreateAuction={goToCreateAuction} />
         <FeatureCards />
         <HowItWorks />
-        <Stats />
+        <ProtocolActivity auctionsState={auctionsState} onConnect={goToApp} />
+        <RecentAuctions auctionsState={auctionsState} onCreateAuction={goToCreateAuction} onViewAuction={goToApp} />
         <CTASection onCreateAuction={goToCreateAuction} onBrowseAuctions={goToApp} />
         <Footer />
       </div>

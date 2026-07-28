@@ -30,14 +30,33 @@
   position: relative;
 }
 
-.secretbid-stats-grid {
+.secretbid-activity-grid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 24px;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 16px;
+}
+
+.secretbid-recent-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
 }
 
 .secretbid-step-connector {
   display: block;
+}
+
+.secretbid-spin {
+  animation: secretbid-spin 1s linear infinite;
+}
+
+@keyframes secretbid-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 @media (max-width: 960px) {
@@ -47,7 +66,10 @@
   .secretbid-steps-grid {
     grid-template-columns: repeat(2, 1fr);
   }
-  .secretbid-stats-grid {
+  .secretbid-activity-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+  .secretbid-recent-grid {
     grid-template-columns: repeat(2, 1fr);
   }
 }
@@ -105,7 +127,8 @@
 @media (max-width: 640px) {
   .secretbid-feature-grid,
   .secretbid-steps-grid,
-  .secretbid-stats-grid {
+  .secretbid-activity-grid,
+  .secretbid-recent-grid {
     grid-template-columns: 1fr;
   }
 }
