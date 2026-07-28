@@ -13,19 +13,22 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-const jsResolver = (path, options) => {
-  const jsExtRegex = /\.js$/i;
-  const resolver = options.defaultResolver;
-  if (jsExtRegex.test(path) && !options.basedir.includes('node_modules') && !path.includes('node_modules')) {
-    const newPath = path.replace(jsExtRegex, '.ts');
-    try {
-      return resolver(newPath, options);
-    } catch {
-      // use default resolver
-    }
+import { useContext } from 'react';
+import { DeployedSecretBidContext, type DeployedSecretBidAPIProvider } from '../contexts';
+
+/**
+ * Retrieves the currently in-scope deployed secretBids provider.
+ *
+ * @returns The currently in-scope {@link DeployedSecretBidAPIProvider} implementation.
+ *
+ * @internal
+ */
+export const useDeployedSecretBidContext = (): DeployedSecretBidAPIProvider => {
+  const context = useContext(DeployedSecretBidContext);
+
+  if (!context) {
+    throw new Error('A <DeployedSecretBidProvider /> is required.');
   }
 
-  return resolver(path, options);
+  return context;
 };
-
-module.exports = jsResolver;

@@ -13,19 +13,20 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-const jsResolver = (path, options) => {
-  const jsExtRegex = /\.js$/i;
-  const resolver = options.defaultResolver;
-  if (jsExtRegex.test(path) && !options.basedir.includes('node_modules') && !path.includes('node_modules')) {
-    const newPath = path.replace(jsExtRegex, '.ts');
-    try {
-      return resolver(newPath, options);
-    } catch {
-      // use default resolver
-    }
-  }
+import { Buffer } from 'buffer';
 
-  return resolver(path, options);
+// While Vite maps the mode that the application is running in by setting either the
+// `PROD` or `DEV` variables, we also need to ensure that `NODE_ENV` is set correctly
+// because we also use third-party libraries within the browser (such as Apollo Client),
+// that might expect it.
+//
+// @ts-expect-error - support third-party libraries that require `NODE_ENV`.
+globalThis.process = {
+  env: {
+    NODE_ENV: import.meta.env.MODE, // Map `MODE` to `process.env.NODE_ENV`.
+  },
 };
 
-module.exports = jsResolver;
+// We'll also make use of `Buffer` objects, so we'll ensure a pollyfill for one is
+// present on the global object.
+globalThis.Buffer = Buffer;

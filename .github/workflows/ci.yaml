@@ -53,12 +53,12 @@ jobs:
         run: |
           npm run ci
 
-      - name: Compile bboard-cli
-        working-directory: bboard-cli
+      - name: Compile secretbid-cli
+        working-directory: secretbid-cli
         run: |
           npm run ci
 
-      - name: Compile bboard-ui
-        working-directory: bboard-ui
+      - name: Compile secretbid-ui
+        working-directory: secretbid-ui
         run: |
           npm run ci

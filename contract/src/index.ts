@@ -1,4 +1,4 @@
-// This file is part of midnightntwrk/example-bboard.
+// This file is part of midnightntwrk/example-secretbid.
 // Copyright (C) Midnight Foundation
 // SPDX-License-Identifier: Apache-2.0
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,15 +15,18 @@
 
 import { CompiledContract } from "@midnight-ntwrk/midnight-js-protocol/compact-js";
 
-export * from "./managed/bboard/contract/index.js";
+export * from "./managed/secretbid/contract/index.js";
 export * from "./witnesses";
 
-import * as CompiledBBoardContract from "./managed/bboard/contract/index.js";
+import * as CompiledSecretBidContract from "./managed/secretbid/contract/index.js";
 import * as Witnesses from "./witnesses";
 
-export const CompiledBBoardContractContract = CompiledContract.make<
-  CompiledBBoardContract.Contract<Witnesses.BBoardPrivateState>
->("BBoard", CompiledBBoardContract.Contract<Witnesses.BBoardPrivateState>).pipe(
+export const CompiledSecretBidContractContract = CompiledContract.make<
+  CompiledSecretBidContract.Contract<Witnesses.SecretBidPrivateState>
+>(
+  "SecretBid",
+  CompiledSecretBidContract.Contract<Witnesses.SecretBidPrivateState>,
+).pipe(
   CompiledContract.withWitnesses(Witnesses.witnesses),
-  CompiledContract.withCompiledFileAssets("./managed/bboard"),
+  CompiledContract.withCompiledFileAssets("./managed/secretbid"),
 );

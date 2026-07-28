@@ -1,4 +1,4 @@
-# Bulletin Board DApp
+# SecretBid DApp
 
 This project is built on the [Midnight Network](https://midnight.network/).
 
@@ -11,18 +11,50 @@ This project is built on the [Midnight Network](https://midnight.network/).
 > This repository is intended to be used via GitHub’s “Use this template” flow.  
 > Forking this repo is discouraged, as forks are not tracked as independent projects.
 
-A Midnight smart contract example demonstrating a simple one-item bulletin board with zero-knowledge proofs on testnet. Users can post a single message at a time, and only the message author can remove it.
+A Midnight dApp for SecretBid, a privacy-preserving sealed-bid auction built with zero-knowledge proofs on testnet.
+
+## Architecture
+
+```
+React  ->  SecretBidAPI  ->  Midnight SDK  ->  secretbid.compact
+```
+
+A single Compact contract (`contract/src/secretbid.compact`) owns all ledger state and all auction
+logic for every auction hosted by one deployment — one deployed contract is an "auction house" that
+can host many auctions, not just one. There is intentionally no separate `AuctionFactory`,
+`AuctionRegistry`, or `CommitmentVerifier` contract: factory-style creation (`createAuction`) and
+commitment verification (`verifyCommitment`) are plain pure helper functions/circuits inside
+`secretbid.compact`, not standalone contracts.
+
+**Identity model:** there is exactly one identity derivation mechanism in the entire project —
+`deriveBidderKey(secretKey, auctionId)` — used identically by the Compact contract, the witnesses,
+the API, the CLI, and (once auction-specific UI exists) the React frontend. Every on-ledger identity
+(an auction's `creator`, a commitment's or reveal's bidder, the eventual `winner`) is this function's
+output for some `auctionId`, never a separate global public key. `deriveAuctionId` is the one
+exception: it hashes a raw secret key directly, because at auction-creation time no `auctionId`
+exists yet to scope a `deriveBidderKey` call to.
+
+The circuits currently defined (`createAuction`, `commitBid`, `startReveal`, `revealBid`,
+`closeAuction`) are placeholders: each performs the minimal ledger wiring needed to be a real,
+callable transaction, but none of them implement the actual auction business rules yet (phase
+checks, authorization, commitment verification, or winner selection). See the doc comments in
+`secretbid.compact` for the intended behavior of each circuit.
+
+The API (`api/src/index.ts`) exposes one `SecretBidAPI` per deployed contract, with an `auctions$`
+observable that emits every auction currently known to that contract, keyed by `AuctionId` — the
+React UI subscribes to `auctions$`, not to a single-auction observable, since a contract hosts many
+auctions concurrently.
 
 ## Project Structure
 
 ```
-bulletin-board/
+secretbid/
 ├── contract/               # Smart contract in Compact language
 │   └── src/               # Contract source and utilities
 ├── api/                   # Methods, classes and types for CLI and UI
-├── bboard-cli/            # Command-line interface
+├── secretbid-cli/            # Command-line interface
 │   └── src/               # CLI implementation
-└── bboard-ui/             # Web browser interface
+└── secretbid-ui/             # Web browser interface
     └── src/               # Web UI implementation
 ```
 
@@ -90,21 +122,24 @@ Expected output:
 
 ```
 > compact
-> compact compile src/bboard.compact ./src/managed/bboard
+> compact compile src/secretbid.compact ./src/managed/secretbid
 
-Compiling 2 circuits:
-  circuit "post" (k=14, rows=10070)
-  circuit "takeDown" (k=14, rows=10087)
+Compiling 5 circuits:
+  circuit "createAuction" (k=..., rows=...)
+  circuit "commitBid" (k=..., rows=...)
+  circuit "startReveal" (k=..., rows=...)
+  circuit "revealBid" (k=..., rows=...)
+  circuit "closeAuction" (k=..., rows=...)
 
 > build
-> rm -rf dist && tsc --project tsconfig.build.json && cp -Rf ./src/managed ./dist/managed && cp ./src/bboard.compact ./dist
+> rm -rf dist && tsc --project tsconfig.build.json && cp -Rf ./src/managed ./dist/managed && cp ./src/secretbid.compact ./dist
 
 ```
 
 ### Build the CLI Interface
 
 ```bash
-cd bboard-cli
+cd secretbid-cli
 npm run build
 cd ..
 ```
@@ -114,7 +149,7 @@ cd ..
 Only needed if you want to use the web interface:
 
 ```bash
-cd bboard-ui
+cd secretbid-ui
 npm run build
 cd ..
 ```
@@ -126,7 +161,7 @@ cd ..
 The CLI requires a local proof server running in Docker:
 
 ```bash
-cd bboard-cli
+cd secretbid-cli
 docker compose -f proof-server-local.yml up -d
 ```
 
@@ -181,19 +216,20 @@ Your NIGHT wallet balance is: 1000000000
 Expected output:
 
 ```
-Deployed bulletin board contract at address: [contract address]
+Deployed secret bid contract at address: [contract address]
 ```
 
-#### Use the Bulletin Board
+#### Use the SecretBid
 
-You can now:
+One deployed contract is an auction house that can host many auctions. From the main menu you can:
 
-- **Post** a message to the bulletin board
-- **View** the current message
-- **Remove** your message (only if you posted it)
+- **Create a new auction** — calls `createAuction`, which registers a new `AuctionRecord` on the ledger
+- **List all known auctions** — shows every auction this contract currently knows about
+- **Select an auction to interact with** — enters a per-auction submenu to commit a bid, start the reveal phase, reveal your bid, or close the auction
+- **Display ledger / private state** — inspect the current contract state
 - **Exit** when done
 
-Each action creates a real transaction on Midnight Testnet using zero-knowledge proofs generated by the proof server.
+Each action creates a real transaction on Midnight Testnet using zero-knowledge proofs generated by the proof server. The circuits behind these actions are currently placeholders: they perform the ledger wiring (creating records, storing commitments, transitioning phases) but do not yet enforce the real auction rules (phase checks, authorization, commitment verification, or winner selection) — see `contract/src/secretbid.compact` for the documented intended behavior of each circuit.
 
 ## Option 2: Web UI Interface
 
@@ -204,7 +240,7 @@ The web interface uses the same proof server and requires additional browser set
 If you haven't started the proof server for the CLI, start it now:
 
 ```bash
-cd bboard-cli
+cd secretbid-cli
 docker compose -f proof-server-local.yml up -d
 cd ..
 ```
@@ -220,7 +256,7 @@ docker ps
 The UI can run against preprod or preview networks:
 
 ```bash
-cd bboard-ui
+cd secretbid-ui
 
 # For preprod network
 npm run build:start
@@ -238,12 +274,12 @@ The UI will be available at:
 1. **Open the UI URL** in a browser with Lace wallet extension installed
 2. **Set up Lace wallet** if it's your first time
 3. **Authorize the application** when Lace wallet prompts
-4. Use the bulletin board web interface
+4. Use the secret bid web interface
 
 ## Useful Links
 
 - Get Testnet tNIGHT on [Preprod Faucet](https://midnight-tmnight-preprod.nethermind.dev/) or [Preview Faucet](https://midnight-tmnight-preview.nethermind.dev/)
-- [Midnight Documentation](https://docs.midnight.network/examples/dapps/bboard) - Complete developer guide
+- [Midnight Documentation](https://docs.midnight.network/examples/dapps/secretbid) - Complete developer guide
 - [Compatibility Matrix](https://docs.midnight.network/relnotes/support-matrix) - Current supported Midnight component versions
 - [Compact Language Guide](https://docs.midnight.network/compact/writing) - Smart contract language reference
 - Get Lace wallet on the [Chrome Store](https://chromewebstore.google.com/detail/lace/gafhhkghbfjjkeiendhlofajokpaflmk) or the [Edge Store](https://microsoftedge.microsoft.com/addons/detail/lace/efeiemlfnahiidnjglmehaihacglceia)

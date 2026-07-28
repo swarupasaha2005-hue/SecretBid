@@ -13,19 +13,33 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-const jsResolver = (path, options) => {
-  const jsExtRegex = /\.js$/i;
-  const resolver = options.defaultResolver;
-  if (jsExtRegex.test(path) && !options.basedir.includes('node_modules') && !path.includes('node_modules')) {
-    const newPath = path.replace(jsExtRegex, '.ts');
-    try {
-      return resolver(newPath, options);
-    } catch {
-      // use default resolver
-    }
-  }
+import React from 'react';
+import { AppBar, Box } from '@mui/material';
 
-  return resolver(path, options);
-};
-
-module.exports = jsResolver;
+/**
+ * A simple application level header for the secret bid application.
+ */
+export const Header: React.FC = () => (
+  <AppBar
+    position="static"
+    data-testid="header"
+    sx={{
+      backgroundColor: '#000',
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+    }}
+  >
+    <Box
+      sx={{
+        display: 'flex',
+        px: 10,
+        py: 2.2,
+        alignItems: 'center',
+      }}
+      data-testid="header-logo"
+    >
+      <img src="/midnight-logo.png" alt="logo-image" height={66} />
+    </Box>
+  </AppBar>
+);
