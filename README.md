@@ -13,6 +13,8 @@ This project is built on the [Midnight Network](https://midnight.network/).
 
 A Midnight dApp for SecretBid, a privacy-preserving sealed-bid auction built with zero-knowledge proofs on testnet.
 
+**Live Demo:** https://midnight3-215s6bnnj-swarupasaha2005-hues-projects.vercel.app/ (also aliased at https://midnight3.vercel.app)
+
 ---
 
 ## Contract Address
@@ -523,7 +525,9 @@ unless you want to override them.
 
 ## Demo Video
 
-A short demo video should show the full auction lifecycle end-to-end:
+**Watch:** https://drive.google.com/file/d/1TOkhhSwSMXCejbuAJQlUofCjqSe0Ds6e/view?usp=sharing
+
+The demo shows the full auction lifecycle end-to-end:
 
 - Connecting the Lace wallet
 - Creating an auction
@@ -531,8 +535,6 @@ A short demo video should show the full auction lifecycle end-to-end:
 - Starting the reveal phase
 - Revealing a bid
 - Closing the auction and seeing the result
-
-Add a link or embed here once recorded.
 
 ## Known Limitations
 
