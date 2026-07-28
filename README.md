@@ -13,6 +13,17 @@ This project is built on the [Midnight Network](https://midnight.network/).
 
 A Midnight dApp for SecretBid, a privacy-preserving sealed-bid auction built with zero-knowledge proofs on testnet.
 
+## Product Idea
+
+Traditional on-chain auctions leak every bid to everyone the moment it's submitted, which lets
+other bidders and even the auction creator see and react to bid amounts before the auction closes.
+SecretBid fixes this using zero-knowledge proofs: a bidder commits to a bid amount via a
+cryptographic commitment (the amount stays private, off-ledger), and only during a dedicated reveal
+phase is the true amount disclosed and proven to match the original commitment. Nobody — not other
+bidders, not the auction creator, not an outside observer of the chain — can see a bid's value
+before the bidder chooses to reveal it. One deployed SecretBid contract acts as an "auction house"
+capable of hosting many concurrent sealed-bid auctions.
+
 ## Architecture
 
 ```
@@ -57,6 +68,36 @@ secretbid/
 └── secretbid-ui/             # Web browser interface
     └── src/               # Web UI implementation
 ```
+
+## Public Ledger State vs Private Witnesses
+
+SecretBid's privacy model rests on a strict split between what lives on the public ledger (visible
+to everyone) and what stays in each wallet's private, local-only state (a "witness").
+
+**Public Ledger State** — data written into the contract's ledger Maps in `secretbid.compact`,
+readable by any observer of the chain:
+
+- `auctions: Map<Bytes<32>, AuctionRecord>` — the public record of every auction (creator, phase,
+  etc.), keyed by `auctionId`.
+- `commitments: Map<Bytes<32>, Bytes<32>>` — the cryptographic commitment hash a bidder submits
+  during `commitBid`. This proves a bidder locked in *some* bid without revealing its amount.
+- `revealedBids: Map<Bytes<32>, Uint<64>>` — the actual bid amount, but only written here once a
+  bidder calls `revealBid` during the reveal phase. Before that, the amount is not on-ledger at all.
+
+**Private Witnesses** — data that never leaves the bidder's own machine, defined in
+`contract/src/witnesses.ts` as `SecretBidPrivateState`:
+
+- `secretKey` — the wallet's global secret key, the root of every per-auction identity the contract
+  derives via `deriveBidderKey(secretKey, auctionId)`. It is never transmitted or written to the
+  ledger.
+- `bids` — a local record of `{amount, nonce}` per `auctionId`, populated by the API *before*
+  `commitBid` is called. The `localBidSecret` witness reads this back to compute the commitment
+  hash during `commitBid`, and again to disclose and prove the amount during `revealBid`.
+
+In short: the `commitments` map on the ledger proves a bid exists without exposing it; the matching
+amount and nonce sit only in the bidder's private `bids` witness until that bidder chooses to call
+`revealBid`, which is the one moment the real value crosses from private witness into public ledger
+state.
 
 ## Prerequisites
 
@@ -275,6 +316,18 @@ The UI will be available at:
 2. **Set up Lace wallet** if it's your first time
 3. **Authorize the application** when Lace wallet prompts
 4. Use the secret bid web interface
+
+## Screenshots
+
+> The images below are placeholders. Capture and add the actual screenshots at the paths shown.
+
+**Successful contract compilation** (circuits listed in the compile output):
+
+`docs/images/compile-output.png`
+
+**Successful contract deployment** (contract address visible):
+
+`docs/images/deployed-contract.png`
 
 ## Useful Links
 
