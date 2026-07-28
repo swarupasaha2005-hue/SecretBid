@@ -584,6 +584,281 @@ describe("commitBid (production circuit)", () => {
   });
 });
 
+describe("startReveal (production circuit)", () => {
+  it("successfully transitions phase from COMMIT to REVEAL", () => {
+    const simulator = new SecretBidSimulator(randomBytes(32));
+    const auctionId = simulator.createAuction(
+      "My auction",
+      "A description",
+      NO_RESERVE,
+    );
+    expect(simulator.getLedger().auctions.lookup(auctionId).phase).toEqual(
+      AuctionPhase.COMMIT,
+    );
+
+    expect(() => simulator.startReveal(auctionId)).not.toThrow();
+
+    expect(simulator.getLedger().auctions.lookup(auctionId).phase).toEqual(
+      AuctionPhase.REVEAL,
+    );
+  });
+
+  it("only the creator may start the reveal phase", () => {
+    const simulator = new SecretBidSimulator(randomBytes(32));
+    const auctionId = simulator.createAuction(
+      "My auction",
+      "A description",
+      NO_RESERVE,
+    );
+
+    simulator.switchUser(randomBytes(32));
+    expect(() => simulator.startReveal(auctionId)).toThrow(
+      /only the auction creator/,
+    );
+  });
+
+  it("succeeds when called by the actual creator, even after switching users and back", () => {
+    const creatorKey = randomBytes(32);
+    const simulator = new SecretBidSimulator(creatorKey);
+    const auctionId = simulator.createAuction(
+      "My auction",
+      "A description",
+      NO_RESERVE,
+    );
+
+    simulator.switchUser(randomBytes(32));
+    expect(() => simulator.startReveal(auctionId)).toThrow();
+
+    simulator.switchUser(creatorKey);
+    expect(() => simulator.startReveal(auctionId)).not.toThrow();
+    expect(simulator.getLedger().auctions.lookup(auctionId).phase).toEqual(
+      AuctionPhase.REVEAL,
+    );
+  });
+
+  it("rejects an unknown auction", () => {
+    const simulator = new SecretBidSimulator(randomBytes(32));
+    const unknownAuctionId = randomBytes(32);
+    expect(() => simulator.startReveal(unknownAuctionId)).toThrow(
+      /unknown auction/,
+    );
+  });
+
+  it("rejects a duplicate transition (auction already in REVEAL)", () => {
+    const simulator = new SecretBidSimulator(randomBytes(32));
+    const auctionId = simulator.createAuction(
+      "My auction",
+      "A description",
+      NO_RESERVE,
+    );
+    simulator.startReveal(auctionId);
+
+    expect(() => simulator.startReveal(auctionId)).toThrow(
+      /not in the commit phase/,
+    );
+  });
+
+  it("rejects starting reveal on an already-closed auction", () => {
+    const simulator = new SecretBidSimulator(randomBytes(32));
+    const auctionId = simulator.createAuction(
+      "My auction",
+      "A description",
+      NO_RESERVE,
+    );
+    simulator.startReveal(auctionId);
+    simulator.closeAuction(auctionId);
+
+    expect(() => simulator.startReveal(auctionId)).toThrow(
+      /not in the commit phase/,
+    );
+  });
+
+  it("leaves the ledger unchanged when rejected for an unknown auction", () => {
+    const simulator = new SecretBidSimulator(randomBytes(32));
+    const unknownAuctionId = randomBytes(32);
+
+    expect(() => simulator.startReveal(unknownAuctionId)).toThrow();
+    expect(simulator.getLedger().auctions.isEmpty()).toEqual(true);
+  });
+
+  it("leaves the ledger unchanged when rejected for wrong caller", () => {
+    const simulator = new SecretBidSimulator(randomBytes(32));
+    const auctionId = simulator.createAuction(
+      "My auction",
+      "A description",
+      NO_RESERVE,
+    );
+    const recordBefore = simulator.getLedger().auctions.lookup(auctionId);
+
+    simulator.switchUser(randomBytes(32));
+    expect(() => simulator.startReveal(auctionId)).toThrow();
+
+    expect(simulator.getLedger().auctions.lookup(auctionId)).toEqual(
+      recordBefore,
+    );
+  });
+
+  it("leaves the ledger unchanged when rejected for wrong phase", () => {
+    const simulator = new SecretBidSimulator(randomBytes(32));
+    const auctionId = simulator.createAuction(
+      "My auction",
+      "A description",
+      NO_RESERVE,
+    );
+    simulator.startReveal(auctionId);
+    const recordBefore = simulator.getLedger().auctions.lookup(auctionId);
+
+    expect(() => simulator.startReveal(auctionId)).toThrow();
+
+    expect(simulator.getLedger().auctions.lookup(auctionId)).toEqual(
+      recordBefore,
+    );
+  });
+
+  it("does not touch commitments when transitioning phase", () => {
+    const simulator = new SecretBidSimulator(randomBytes(32));
+    const auctionId = simulator.createAuction(
+      "My auction",
+      "A description",
+      NO_RESERVE,
+    );
+    simulator.setBidSecret(auctionId, 100n, randomBytes(32));
+    simulator.commitBid(auctionId);
+    const commitmentsBefore = simulator.getLedger().commitments.size();
+
+    simulator.startReveal(auctionId);
+
+    expect(simulator.getLedger().commitments.size()).toEqual(commitmentsBefore);
+  });
+
+  it("does not touch commitCount", () => {
+    const simulator = new SecretBidSimulator(randomBytes(32));
+    const auctionId = simulator.createAuction(
+      "My auction",
+      "A description",
+      NO_RESERVE,
+    );
+    simulator.setBidSecret(auctionId, 100n, randomBytes(32));
+    simulator.commitBid(auctionId);
+    const commitCountBefore = simulator
+      .getLedger()
+      .auctions.lookup(auctionId).commitCount;
+
+    simulator.startReveal(auctionId);
+
+    expect(
+      simulator.getLedger().auctions.lookup(auctionId).commitCount,
+    ).toEqual(commitCountBefore);
+  });
+
+  it("does not touch revealCount", () => {
+    const simulator = new SecretBidSimulator(randomBytes(32));
+    const auctionId = simulator.createAuction(
+      "My auction",
+      "A description",
+      NO_RESERVE,
+    );
+
+    simulator.startReveal(auctionId);
+
+    expect(
+      simulator.getLedger().auctions.lookup(auctionId).revealCount,
+    ).toEqual(0n);
+  });
+
+  it("does not touch revealedBids", () => {
+    const simulator = new SecretBidSimulator(randomBytes(32));
+    const auctionId = simulator.createAuction(
+      "My auction",
+      "A description",
+      NO_RESERVE,
+    );
+
+    simulator.startReveal(auctionId);
+
+    expect(simulator.getLedger().revealedBids.isEmpty()).toEqual(true);
+  });
+
+  it("does not touch winner or winningBid", () => {
+    const simulator = new SecretBidSimulator(randomBytes(32));
+    const auctionId = simulator.createAuction(
+      "My auction",
+      "A description",
+      NO_RESERVE,
+    );
+
+    simulator.startReveal(auctionId);
+
+    const record = simulator.getLedger().auctions.lookup(auctionId);
+    expect(record.winner.is_some).toEqual(false);
+    expect(record.winningBid.is_some).toEqual(false);
+  });
+
+  it("does not touch title, description, reservePrice, creator, or auctionId", () => {
+    const simulator = new SecretBidSimulator(randomBytes(32));
+    const auctionId = simulator.createAuction("My auction", "A description", {
+      is_some: true,
+      value: 500n,
+    });
+    const before = simulator.getLedger().auctions.lookup(auctionId);
+
+    simulator.startReveal(auctionId);
+
+    const after = simulator.getLedger().auctions.lookup(auctionId);
+    expect(after.auctionId).toEqual(before.auctionId);
+    expect(after.creator).toEqual(before.creator);
+    expect(after.title).toEqual(before.title);
+    expect(after.description).toEqual(before.description);
+    expect(after.reservePrice).toEqual(before.reservePrice);
+  });
+
+  it("transitions multiple auctions independently", () => {
+    const simulator = new SecretBidSimulator(randomBytes(32));
+    const auctionIdA = simulator.createAuction(
+      "Auction A",
+      "A description",
+      NO_RESERVE,
+    );
+    const auctionIdB = simulator.createAuction(
+      "Auction B",
+      "A description",
+      NO_RESERVE,
+    );
+
+    simulator.startReveal(auctionIdA);
+
+    expect(simulator.getLedger().auctions.lookup(auctionIdA).phase).toEqual(
+      AuctionPhase.REVEAL,
+    );
+    expect(simulator.getLedger().auctions.lookup(auctionIdB).phase).toEqual(
+      AuctionPhase.COMMIT,
+    );
+
+    simulator.startReveal(auctionIdB);
+
+    expect(simulator.getLedger().auctions.lookup(auctionIdA).phase).toEqual(
+      AuctionPhase.REVEAL,
+    );
+    expect(simulator.getLedger().auctions.lookup(auctionIdB).phase).toEqual(
+      AuctionPhase.REVEAL,
+    );
+  });
+
+  it("does not mutate the caller's private state", () => {
+    const simulator = new SecretBidSimulator(randomBytes(32));
+    const auctionId = simulator.createAuction(
+      "My auction",
+      "A description",
+      NO_RESERVE,
+    );
+    const stateBefore = simulator.getPrivateState();
+
+    simulator.startReveal(auctionId);
+
+    expect(simulator.getPrivateState()).toEqual(stateBefore);
+  });
+});
+
 describe("SecretBid pure cryptographic helpers", () => {
   it("createCommitment and verifyCommitment agree on a matching reveal", () => {
     const simulator = new SecretBidSimulator(randomBytes(32));

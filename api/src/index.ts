@@ -53,10 +53,10 @@ import { SecretBidPrivateState, createSecretBidPrivateState, setLocalBidSecret }
  * @remarks
  * Every method here is a thin wire-up to one circuit in `secretbid.compact` (or, for
  * `getAuction`/`getWinner`, a plain off-chain read of already-public ledger data — Midnight ledger
- * state does not require a transaction to read). `createAuction` is production-complete: it fully
- * validates its input and mutates the ledger via the underlying circuit. `commitBid`, `startReveal`,
- * `revealBid`, and `closeAuction` still wire up to placeholder circuits that perform minimal ledger
- * wiring only — no phase/authorization/commitment-verification rules are enforced by them yet.
+ * state does not require a transaction to read). `createAuction`, `commitBid`, and `startReveal` are
+ * production-complete: each fully validates its input and mutates the ledger via its underlying
+ * circuit. `revealBid` and `closeAuction` still wire up to placeholder circuits that perform minimal
+ * ledger wiring only — no commitment-verification or winner-selection rules are enforced by them yet.
  */
 export interface DeployedSecretBidAPI {
   readonly deployedContractAddress: ContractAddress;
@@ -205,11 +205,16 @@ export class SecretBidAPI implements DeployedSecretBidAPI {
   }
 
   /**
-   * Placeholder circuit call.
+   * Transitions an auction from the COMMIT phase to the REVEAL phase.
+   *
+   * @param auctionId The auction to transition.
    *
    * @remarks
-   * Wires up to the `startReveal` circuit, which today identifies the caller but does not yet check
-   * that they are the auction's creator, nor transition the auction's phase.
+   * Wires up to the production `startReveal` circuit in `secretbid.compact`, which verifies the
+   * auction exists, that the caller is the auction's creator (identified via
+   * `deriveBidderKey(secretKey, auctionId)`), and that the auction is currently in the COMMIT phase,
+   * before flipping its phase to REVEAL. This circuit performs no other logic — no commitments,
+   * reveals, or winner-selection are touched.
    */
   async startReveal(auctionId: AuctionId): Promise<void> {
     this.logger?.info({ startingReveal: { auctionId } });
