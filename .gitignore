@@ -58,7 +58,14 @@ jspm_packages/
 *.sln
 
 # Compact
+# `contract/src/managed` is the compiled contract output (bindings, prover/verifier keys, zkir).
+# It's committed on purpose: platforms like Vercel run `npm run build` without the Compact
+# compiler installed, so the compiled output must already be present in the repo for the build
+# (and the UI's `cp -r ../contract/src/managed/...` step) to succeed. Only build-output copies of
+# it under `dist/` (already covered by the `dist/` rule above) stay ignored.
 managed/
+!contract/src/managed/
+!contract/src/managed/**
 
 .claude
 .midnight-expert
