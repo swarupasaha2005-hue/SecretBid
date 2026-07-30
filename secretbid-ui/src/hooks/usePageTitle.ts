@@ -13,6 +13,22 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-export type { SecretBidDeployment, DeployedSecretBidAPIProvider } from './BrowserDeployedSecretBidManager';
-export * from './DeployedSecretBidContext';
-export * from './ToastContext';
+import { useEffect } from 'react';
+
+const BASE_TITLE = 'SecretBid';
+
+/**
+ * Sets the browser tab title for the page it's called from, formatted as `"<title> | SecretBid"`
+ * (or just `"SecretBid"` for the landing page). Restores the previous title on unmount so
+ * navigating away — including back to a page that doesn't call this hook — doesn't leave a stale
+ * title behind.
+ */
+export const usePageTitle = (title?: string): void => {
+  useEffect(() => {
+    const previous = document.title;
+    document.title = title ? `${title} | ${BASE_TITLE}` : BASE_TITLE;
+    return () => {
+      document.title = previous;
+    };
+  }, [title]);
+};

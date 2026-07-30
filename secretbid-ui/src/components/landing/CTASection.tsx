@@ -71,7 +71,7 @@ export const CTASection: React.FC<CTASectionProps> = ({ onCreateAuction, onBrows
               Create Auction
             </GradientButton>
             <GradientButton size="large" variant="secondary" onClick={onBrowseAuctions}>
-              Browse Auctions
+              Dashboard
             </GradientButton>
           </div>
         </div>

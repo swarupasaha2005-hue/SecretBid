@@ -15,10 +15,19 @@
 
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { palette } from '../../theme/palette';
 import { GradientButton } from './GradientButton';
 
-const NAV_LINKS = ['Home', 'Auctions', 'Create Auction', 'About'];
+const NAV_LINKS = ['Home', 'Dashboard', 'Create Auction', 'About'];
+
+/** Maps each nav label to its route, for both default navigation and active-link highlighting. */
+const LABEL_TO_PATH: Record<string, string> = {
+  Home: '/',
+  Dashboard: '/dashboard',
+  'Create Auction': '/create-auction',
+  About: '/about',
+};
 
 export interface NavbarProps {
   onConnectWallet?: () => void;
@@ -28,16 +37,24 @@ export interface NavbarProps {
 
 /**
  * A single nav link with a glowing underline indicator that animates in on
- * hover — the "premium object" feel the capsule is going for.
+ * hover — the "premium object" feel the capsule is going for. `active`
+ * keeps that same underline (and brighter text) visible without hovering,
+ * for whichever page is currently open.
  */
-const NavLink: React.FC<{ label: string; onClick?: () => void }> = ({ label, onClick }) => {
+const NavLink: React.FC<{ label: string; active?: boolean; onClick?: () => void }> = ({
+  label,
+  active = false,
+  onClick,
+}) => {
   const [hovered, setHovered] = useState(false);
+  const highlighted = hovered || active;
 
   return (
     <button
       onClick={onClick}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
+      aria-current={active ? 'page' : undefined}
       style={{
         position: 'relative',
         background: 'none',
@@ -47,7 +64,7 @@ const NavLink: React.FC<{ label: string; onClick?: () => void }> = ({ label, onC
         fontSize: 14.5,
         fontWeight: 500,
         padding: '4px 0',
-        color: hovered ? '#FFFFFF' : '#CFC8E9',
+        color: highlighted ? '#FFFFFF' : '#CFC8E9',
         transition: 'color 0.25s ease',
       }}
     >
@@ -55,7 +72,7 @@ const NavLink: React.FC<{ label: string; onClick?: () => void }> = ({ label, onC
       <motion.span
         aria-hidden
         initial={false}
-        animate={{ opacity: hovered ? 1 : 0, scaleX: hovered ? 1 : 0.4 }}
+        animate={{ opacity: highlighted ? 1 : 0, scaleX: highlighted ? 1 : 0.4 }}
         transition={{ duration: 0.25, ease: 'easeOut' }}
         style={{
           position: 'absolute',
@@ -83,11 +100,20 @@ const NavLink: React.FC<{ label: string; onClick?: () => void }> = ({ label, onC
  */
 export const Navbar: React.FC<NavbarProps> = ({ onConnectWallet, onNavigate, walletConnected = false }) => {
   const [menuOpen, setMenuOpen] = useState(false);
+  const navigate = useNavigate();
+  const location = useLocation();
 
   const handleNavigate = (label: string) => {
     setMenuOpen(false);
-    onNavigate?.(label);
+    if (onNavigate) {
+      onNavigate(label);
+      return;
+    }
+    const path = LABEL_TO_PATH[label];
+    if (path) void navigate(path);
   };
+
+  const handleConnectWallet = onConnectWallet ?? (() => void navigate('/app'));
 
   return (
     <>
@@ -143,7 +169,12 @@ export const Navbar: React.FC<NavbarProps> = ({ onConnectWallet, onNavigate, wal
             style={{ display: 'flex', alignItems: 'center', gap: 48, marginLeft: 48 }}
           >
             {NAV_LINKS.map((label) => (
-              <NavLink key={label} label={label} onClick={() => handleNavigate(label)} />
+              <NavLink
+                key={label}
+                label={label}
+                active={location.pathname === LABEL_TO_PATH[label]}
+                onClick={() => handleNavigate(label)}
+              />
             ))}
           </div>
 
@@ -174,7 +205,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onConnectWallet, onNavigate, wal
                 Connected
               </span>
             )}
-            <GradientButton variant="primary" onClick={onConnectWallet}>
+            <GradientButton variant="primary" onClick={handleConnectWallet}>
               {walletConnected ? 'Wallet' : 'Connect Wallet'}
             </GradientButton>
           </div>
@@ -243,6 +274,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onConnectWallet, onNavigate, wal
                   <button
                     key={label}
                     onClick={() => handleNavigate(label)}
+                    aria-current={location.pathname === LABEL_TO_PATH[label] ? 'page' : undefined}
                     style={{
                       background: 'none',
                       border: 'none',
@@ -250,13 +282,13 @@ export const Navbar: React.FC<NavbarProps> = ({ onConnectWallet, onNavigate, wal
                       fontFamily: 'inherit',
                       fontSize: 16,
                       fontWeight: 500,
-                      color: '#CFC8E9',
+                      color: location.pathname === LABEL_TO_PATH[label] ? '#FFFFFF' : '#CFC8E9',
                     }}
                   >
                     {label}
                   </button>
                 ))}
-                <GradientButton variant="primary" onClick={onConnectWallet}>
+                <GradientButton variant="primary" onClick={handleConnectWallet}>
                   {walletConnected ? 'Wallet' : 'Connect Wallet'}
                 </GradientButton>
               </motion.div>

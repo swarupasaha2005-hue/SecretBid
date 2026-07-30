@@ -25,15 +25,20 @@ import React from 'react';
 import ReactDOM from 'react-dom/client';
 import { ThemeProvider } from '@mui/material';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { QueryClientProvider } from '@tanstack/react-query';
 import { setNetworkId, NetworkId } from '@midnight-ntwrk/midnight-js-network-id';
 import App from './App';
 import { LandingPage } from './pages/LandingPage';
 import { CreateAuctionPage } from './pages/CreateAuctionPage';
+import { DashboardPage } from './pages/DashboardPage';
+import { AuctionDetailsPage } from './pages/AuctionDetailsPage';
+import { AboutPage } from './pages/AboutPage';
 import CssBaseline from '@mui/material/CssBaseline';
 import { theme } from './config/theme';
 import '@midnight-ntwrk/dapp-connector-api';
 import * as pino from 'pino';
-import { DeployedSecretBidProvider } from './contexts';
+import { DeployedSecretBidProvider, ToastProvider } from './contexts';
+import { queryClient } from './lib/queryClient';
 
 const networkId = import.meta.env.VITE_NETWORK_ID as NetworkId;
 // contract address: 0200dbf964f541e1950883f5b2f539b66fd6111e46ce8e6e9551fbdd180114d5dd5b
@@ -51,15 +56,22 @@ ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
   <React.StrictMode>
     <CssBaseline />
     <ThemeProvider theme={theme}>
-      <DeployedSecretBidProvider logger={logger}>
-        <BrowserRouter>
-          <Routes>
-            <Route path="/" element={<LandingPage />} />
-            <Route path="/app" element={<App />} />
-            <Route path="/create-auction" element={<CreateAuctionPage />} />
-          </Routes>
-        </BrowserRouter>
-      </DeployedSecretBidProvider>
+      <QueryClientProvider client={queryClient}>
+        <DeployedSecretBidProvider logger={logger}>
+          <ToastProvider>
+            <BrowserRouter>
+              <Routes>
+                <Route path="/" element={<LandingPage />} />
+                <Route path="/app" element={<App />} />
+                <Route path="/create-auction" element={<CreateAuctionPage />} />
+                <Route path="/dashboard" element={<DashboardPage />} />
+                <Route path="/auction/:auctionId" element={<AuctionDetailsPage />} />
+                <Route path="/about" element={<AboutPage />} />
+              </Routes>
+            </BrowserRouter>
+          </ToastProvider>
+        </DeployedSecretBidProvider>
+      </QueryClientProvider>
     </ThemeProvider>
   </React.StrictMode>,
 );

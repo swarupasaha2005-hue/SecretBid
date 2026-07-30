@@ -13,14 +13,15 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { AnimatePresence, motion } from 'framer-motion';
-import { CheckCircle2, Gavel, Loader2, Lock, Shield, Sparkles } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { Gavel, Loader2, Lock, Shield, Sparkles } from 'lucide-react';
 import { AmbientBackground, Navbar, Footer, GlassCard } from '../components/landing';
 import { palette, gradients } from '../theme/palette';
-import { useDeployedSecretBidContext } from '../hooks';
-import { type SecretBidDeployment } from '../contexts';
+import { useCreateAuction, useDeployment, usePageTitle } from '../hooks';
+import { useToast } from '../contexts';
+import { classifyError } from '../lib/errors';
 import './create-auction.css';
 
 /**
@@ -29,78 +30,56 @@ import './create-auction.css';
  * screen (the black background + coin + white MUI card) entirely.
  *
  * @remarks
- * All business logic here is a thin wrapper around the existing,
- * unmodified `DeployedSecretBidAPIProvider` / `DeployedSecretBidAPI`: on
- * mount it calls `resolve()` to deploy (or reuse) a SecretBid contract —
- * exactly what the old `EmptyCardContent` "create" button did — and once
- * deployed, submitting the form calls the existing `createAuction(...)`
- * circuit wire-up with no changes to its signature or validation.
+ * All business logic here is a thin wrapper around the existing, unmodified `DeployedSecretBidAPI`:
+ * {@link useDeployment} connects (deploy-or-join) exactly as before, and submitting the form calls
+ * {@link useCreateAuction} — a TanStack Query mutation wrapping `createAuction(...)` with no changes
+ * to its signature or validation. On a real failure (including the Midnight backend being
+ * unavailable) the form fields are preserved untouched and a toast explains what happened, so the
+ * user can simply retry once the network is back — nothing here fabricates a successful submission.
  */
 export const CreateAuctionPage: React.FC = () => {
+  usePageTitle('Create Auction');
   const navigate = useNavigate();
-  const secretBidApiProvider = useDeployedSecretBidContext();
-
-  const [deployment, setDeployment] = useState<SecretBidDeployment>();
-  const hasResolved = useRef(false);
+  const { showToast } = useToast();
+  const deployment = useDeployment();
+  const api = deployment.status === 'ready' ? deployment.api : undefined;
+  const createAuction = useCreateAuction(api);
 
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [reservePrice, setReservePrice] = useState('');
-  const [submitting, setSubmitting] = useState(false);
-  const [submitError, setSubmitError] = useState<string>();
-  const [showSuccess, setShowSuccess] = useState(false);
 
-  const deploy = useCallback(() => {
-    const subscription = secretBidApiProvider.resolve().subscribe(setDeployment);
-    return subscription;
-  }, [secretBidApiProvider]);
+  const isConnecting = deployment.status === 'connecting';
+  const isFailed = deployment.status === 'error';
+  const submitting = createAuction.isPending;
 
-  useEffect(() => {
-    if (hasResolved.current) return;
-    hasResolved.current = true;
-    const subscription = deploy();
-    return () => subscription.unsubscribe();
-  }, [deploy]);
-
-  useEffect(() => {
-    if (!showSuccess) return;
-    const timer = setTimeout(() => setShowSuccess(false), 4000);
-    return () => clearTimeout(timer);
-  }, [showSuccess]);
-
-  const isConnecting = !deployment || deployment.status === 'in-progress';
-  const isFailed = deployment?.status === 'failed';
-  const api = deployment?.status === 'deployed' ? deployment.api : undefined;
-
-  const handleRetry = () => {
-    hasResolved.current = true;
-    setDeployment(undefined);
-    deploy();
-  };
-
-  const handleSubmit = async (event: React.FormEvent) => {
+  const handleSubmit = (event: React.FormEvent) => {
     event.preventDefault();
     if (!api || submitting || !title.trim()) return;
 
-    setSubmitting(true);
-    setSubmitError(undefined);
+    const trimmedReserve = reservePrice.trim();
 
-    try {
-      const trimmedReserve = reservePrice.trim();
-      await api.createAuction({
+    createAuction.mutate(
+      {
         title: title.trim(),
         description: description.trim(),
         reservePrice: trimmedReserve ? BigInt(trimmedReserve) : undefined,
-      });
-      setTitle('');
-      setDescription('');
-      setReservePrice('');
-      setShowSuccess(true);
-    } catch (error) {
-      setSubmitError(error instanceof Error ? error.message : 'Something went wrong while creating the auction.');
-    } finally {
-      setSubmitting(false);
-    }
+      },
+      {
+        onSuccess: () => {
+          setTitle('');
+          setDescription('');
+          setReservePrice('');
+          showToast('success', 'Auction created successfully.');
+          void navigate('/dashboard');
+        },
+        onError: (error) => {
+          // Form state is intentionally left untouched here so the user can just retry.
+          const classified = classifyError(error);
+          showToast(classified.kind === 'midnight-unavailable' ? 'warning' : 'error', classified.message);
+        },
+      },
+    );
   };
 
   return (
@@ -197,14 +176,14 @@ export const CreateAuctionPage: React.FC = () => {
                 </div>
               )}
 
-              {isFailed && (
+              {isFailed && deployment.status === 'error' && (
                 <div
                   style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 16, padding: '32px 0' }}
                 >
                   <p style={{ color: palette.error, fontSize: 14.5, margin: 0, textAlign: 'center' }}>
-                    {deployment?.status === 'failed' ? deployment.error.message : 'Failed to connect.'}
+                    {deployment.error.message}
                   </p>
-                  <SubmitButton type="button" onClick={handleRetry}>
+                  <SubmitButton type="button" onClick={deployment.retry}>
                     Try Again
                   </SubmitButton>
                 </div>
@@ -262,12 +241,6 @@ export const CreateAuctionPage: React.FC = () => {
                     />
                   </FormField>
 
-                  {submitError && (
-                    <p role="alert" style={{ color: palette.error, fontSize: 13.5, marginTop: -8, marginBottom: 20 }}>
-                      {submitError}
-                    </p>
-                  )}
-
                   <SubmitButton type="submit" disabled={submitting || !title.trim()} loading={submitting}>
                     {submitting ? 'Creating Auction…' : 'Create Auction'}
                   </SubmitButton>
@@ -302,39 +275,6 @@ export const CreateAuctionPage: React.FC = () => {
 
         <Footer />
       </div>
-
-      <AnimatePresence>
-        {showSuccess && (
-          <motion.div
-            initial={{ opacity: 0, y: -16, scale: 0.95 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: -16, scale: 0.95 }}
-            transition={{ duration: 0.25, ease: 'easeOut' }}
-            style={{
-              position: 'fixed',
-              top: 24,
-              right: 24,
-              zIndex: 100,
-              display: 'flex',
-              alignItems: 'center',
-              gap: 10,
-              padding: '14px 20px',
-              borderRadius: 16,
-              background: 'rgba(16,8,32,0.9)',
-              backdropFilter: 'blur(20px)',
-              WebkitBackdropFilter: 'blur(20px)',
-              border: `1px solid ${palette.border}`,
-              boxShadow: `0 10px 40px -8px ${palette.glow}`,
-              color: palette.textPrimary,
-              fontSize: 14,
-              fontWeight: 500,
-            }}
-          >
-            <CheckCircle2 size={18} color={palette.success} />
-            Auction created successfully.
-          </motion.div>
-        )}
-      </AnimatePresence>
     </div>
   );
 };

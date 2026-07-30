@@ -251,7 +251,7 @@ export const Hero: React.FC<HeroProps> = ({ onExploreAuctions, onCreateAuction }
           style={{ display: 'flex', gap: 16, flexWrap: 'wrap', justifyContent: 'center' }}
         >
           <GradientButton size="large" variant="primary" onClick={onExploreAuctions}>
-            Explore Auctions
+            Explore Dashboard
           </GradientButton>
           <GradientButton size="large" variant="secondary" onClick={onCreateAuction}>
             Create Auction

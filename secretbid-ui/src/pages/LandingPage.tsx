@@ -26,7 +26,7 @@ import {
   CTASection,
   Footer,
 } from '../components/landing';
-import { useLandingAuctions } from '../hooks';
+import { useLandingAuctions, usePageTitle } from '../hooks';
 
 /**
  * The SecretBid marketing landing page: a cinematic, premium Web3 landing
@@ -34,15 +34,16 @@ import { useLandingAuctions } from '../hooks';
  * background glow, card surfaces, gradients — is UI-only presentation, with one exception: the
  * "Protocol Activity" and "Recent Auctions" sections below display real, live auction data (via
  * `useLandingAuctions`) whenever a SecretBid contract deployment is already connected. "Explore
- * Auctions" / "Create Auction" / "Browse Auctions" all route through to the existing SecretBid
- * dashboard at `/app`, where wallet connection and contract interactions happen.
+ * Dashboard" / "Create Auction" / "Dashboard" (CTA) route to `/dashboard`, the app's authenticated
+ * hub; "Connect Wallet" routes to `/app`, where wallet connection and contract interactions happen.
  */
 export const LandingPage: React.FC = () => {
+  usePageTitle();
   const navigate = useNavigate();
   const auctionsState = useLandingAuctions();
   const goToApp = () => navigate('/app');
   const goToCreateAuction = () => navigate('/create-auction');
-  const goToNavLink = (label: string) => (label === 'Create Auction' ? goToCreateAuction() : goToApp());
+  const goToDashboard = () => navigate('/dashboard');
 
   return (
     <div
@@ -50,13 +51,17 @@ export const LandingPage: React.FC = () => {
     >
       <AmbientBackground />
       <div style={{ position: 'relative', zIndex: 1 }}>
-        <Navbar onConnectWallet={goToApp} onNavigate={goToNavLink} />
-        <Hero onExploreAuctions={goToApp} onCreateAuction={goToCreateAuction} />
+        <Navbar />
+        <Hero onExploreAuctions={goToDashboard} onCreateAuction={goToCreateAuction} />
         <FeatureCards />
         <HowItWorks />
         <ProtocolActivity auctionsState={auctionsState} onConnect={goToApp} />
-        <RecentAuctions auctionsState={auctionsState} onCreateAuction={goToCreateAuction} onViewAuction={goToApp} />
-        <CTASection onCreateAuction={goToCreateAuction} onBrowseAuctions={goToApp} />
+        <RecentAuctions
+          auctionsState={auctionsState}
+          onCreateAuction={goToCreateAuction}
+          onViewAuction={goToDashboard}
+        />
+        <CTASection onCreateAuction={goToCreateAuction} onBrowseAuctions={goToDashboard} />
         <Footer />
       </div>
     </div>

@@ -15,3 +15,6 @@
 
 export * from './useDeployedSecretBidContext';
 export * from './useLandingAuctions';
+export * from './useDeployment';
+export * from './useAuctionQueries';
+export * from './usePageTitle';

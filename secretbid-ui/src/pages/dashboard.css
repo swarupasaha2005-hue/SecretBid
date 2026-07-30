@@ -1,0 +1,218 @@
+/* This file is part of midnightntwrk/example-secretbid.
+ * Copyright (C) Midnight Foundation
+ * SPDX-License-Identifier: Apache-2.0
+ *
+ * Styles scoped to the Dashboard page only — reuses the landing
+ * page's glass/gradient design language but is not shared with it.
+ */
+
+.secretbid-auctions-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.secretbid-auctions-search-wrap {
+  position: relative;
+  flex: 1 1 240px;
+  min-width: 200px;
+}
+
+.secretbid-auctions-search-icon {
+  position: absolute;
+  left: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  pointer-events: none;
+  display: flex;
+}
+
+.secretbid-auctions-search {
+  width: 100%;
+  box-sizing: border-box;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 999px;
+  padding: 12px 16px 12px 44px;
+  font-size: 14.5px;
+  font-family: inherit;
+  color: #ffffff;
+  outline: none;
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease,
+    background 0.2s ease;
+}
+
+.secretbid-auctions-search::placeholder {
+  color: #7b7690;
+}
+
+.secretbid-auctions-search:focus-visible {
+  border-color: rgba(168, 107, 255, 0.55);
+  box-shadow:
+    0 0 0 4px rgba(138, 79, 255, 0.14),
+    0 0 24px 2px rgba(168, 107, 255, 0.2);
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.secretbid-auctions-chips {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.secretbid-auctions-chip {
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.03);
+  color: #b7b2c8;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  border-radius: 999px;
+  padding: 8px 16px;
+  cursor: pointer;
+  transition:
+    background 0.2s ease,
+    border-color 0.2s ease,
+    color 0.2s ease,
+    box-shadow 0.2s ease;
+  white-space: nowrap;
+}
+
+.secretbid-auctions-chip:hover {
+  color: #ffffff;
+  border-color: rgba(255, 255, 255, 0.16);
+}
+
+.secretbid-auctions-chip[data-active='true'] {
+  color: #ffffff;
+  border-color: rgba(168, 107, 255, 0.55);
+  background: linear-gradient(135deg, rgba(138, 79, 255, 0.22) 0%, rgba(168, 107, 255, 0.14) 100%);
+  box-shadow: 0 0 20px 1px rgba(168, 107, 255, 0.22);
+}
+
+.secretbid-auctions-sort {
+  flex: 0 0 auto;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 999px;
+  padding: 11px 36px 11px 18px;
+  font-size: 13.5px;
+  font-weight: 600;
+  font-family: inherit;
+  color: #ffffff;
+  outline: none;
+  cursor: pointer;
+  appearance: none;
+  -webkit-appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6' fill='none'%3E%3Cpath d='M1 1L5 5L9 1' stroke='%23B7B2C8' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 16px center;
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.secretbid-auctions-sort:focus-visible {
+  border-color: rgba(168, 107, 255, 0.55);
+  box-shadow: 0 0 0 4px rgba(138, 79, 255, 0.14);
+}
+
+.secretbid-auctions-sort option {
+  background: #10081f;
+  color: #ffffff;
+}
+
+/* Any keyboard-focusable interactive element on this page gets a visible,
+   consistent focus ring — search, chips, sort, and cards. */
+.secretbid-auctions-search:focus-visible,
+.secretbid-auctions-chip:focus-visible,
+.secretbid-auctions-sort:focus-visible,
+.secretbid-auctions-card:focus-visible,
+.secretbid-auctions-view-btn:focus-visible {
+  outline: 2px solid rgba(220, 197, 255, 0.85);
+  outline-offset: 2px;
+}
+
+.secretbid-auctions-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+}
+
+.secretbid-auctions-card {
+  display: block;
+  width: 100%;
+  text-align: left;
+  cursor: pointer;
+  border: none;
+  padding: 0;
+  background: none;
+  font-family: inherit;
+  color: inherit;
+}
+
+.secretbid-auctions-view-btn {
+  cursor: pointer;
+}
+
+.secretbid-auctions-skeleton {
+  position: relative;
+  overflow: hidden;
+}
+
+.secretbid-auctions-skeleton::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.06) 50%, transparent 100%);
+  animation: secretbid-auctions-shimmer 1.8s ease-in-out infinite;
+}
+
+@keyframes secretbid-auctions-shimmer {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(100%);
+  }
+}
+
+@media (max-width: 960px) {
+  .secretbid-auctions-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .secretbid-auctions-toolbar {
+    justify-content: center;
+  }
+}
+
+@media (max-width: 860px) {
+  .secretbid-auctions-page {
+    padding-top: 56px !important;
+  }
+  .secretbid-auctions-toolbar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .secretbid-auctions-search-wrap {
+    flex: 1 1 auto;
+  }
+  .secretbid-auctions-chips {
+    justify-content: flex-start;
+  }
+  .secretbid-auctions-sort {
+    width: 100%;
+  }
+}
+
+@media (max-width: 640px) {
+  .secretbid-auctions-grid {
+    grid-template-columns: 1fr;
+  }
+}

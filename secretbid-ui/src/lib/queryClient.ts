@@ -1,0 +1,36 @@
+// This file is part of midnightntwrk/example-secretbid.
+// Copyright (C) Midnight Foundation
+// SPDX-License-Identifier: Apache-2.0
+// Licensed under the Apache License, Version 2.0 (the "License");
+// You may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import { QueryClient } from '@tanstack/react-query';
+
+/**
+ * The application's single {@link QueryClient}. Auction data is fundamentally push-based (the
+ * `DeployedSecretBidAPI.auctions$` observable), so queries here are kept fresh by a live RxJS
+ * subscription writing into the cache (see `hooks/useAuctionQueries.ts`) rather than by polling —
+ * `staleTime: Infinity` and `retry: false` reflect that the query layer is a thin, typed façade over
+ * that live stream, not the primary fetch mechanism.
+ */
+export const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: Infinity,
+      retry: false,
+      refetchOnWindowFocus: false,
+    },
+    mutations: {
+      retry: false,
+    },
+  },
+});
