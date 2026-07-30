@@ -187,6 +187,48 @@ other bidders — can rank, compare, or infer bid amounts before reveal. Bid amo
 confidential for the entire commit phase and only become public once a bidder chooses to reveal
 them.
 
+## Privacy Model
+
+This section states plainly what any observer of the Midnight ledger — a block explorer, another
+bidder, the auction creator, or anyone else with no special access — can and cannot learn from a
+SecretBid auction, based on the public/private split described above.
+
+### What an Observer CAN Learn
+
+- **That an auction exists** — every `createAuction` call is visible, so an observer can see an
+  `AuctionRecord` in the `auctions` map, including its `creator` (a pseudonymous per-auction
+  `deriveBidderKey` value, not a wallet's real-world identity), its current `phase`, and any
+  creator-defined terms stored on the record.
+- **That a specific bidder committed a bid** — a `commitBid` call writes an entry into the
+  `commitments` map. An observer can see *that* pseudonymous bidder `X` committed to auction `Y`,
+  and can count how many commitments an auction has received.
+- **The exact revealed bid amount, once revealed** — after a bidder calls `revealBid`, their real
+  amount is written into the `revealedBids` map and becomes fully public, permanently.
+- **Transaction timing and ordering** — when each `commitBid`, `startReveal`, `revealBid`, and
+  `closeAuction` call was submitted, same as any other Midnight transaction.
+
+### What an Observer CANNOT Learn
+
+- **A bid's amount before it is revealed** — `commitBid` only ever puts a fixed-size commitment
+  *hash* on-ledger (via `createCommitment`). A hash of `100` and a hash of `1,000,000` are
+  indistinguishable strings of bytes; nothing about the underlying amount leaks from the hash
+  itself.
+- **Which committed bids are high or low, before reveal** — because every commitment looks like
+  every other, an observer (or another bidder) cannot rank, compare, or estimate committed amounts
+  ahead of the reveal phase. This is what prevents bid-sniping and copy-bidding, unlike a typical
+  transparent on-chain auction where every bid is visible the instant it lands.
+- **The bidder's wallet secret key** — `secretKey` in `SecretBidPrivateState` never leaves the
+  bidder's machine and is never written to the ledger. Only `deriveBidderKey(secretKey, auctionId)`
+  — a one-way, per-auction pseudonym — ever appears on-chain, so an observer cannot recover the
+  underlying key or link a bidder's identity across unrelated auctions from ledger data alone.
+- **The unrevealed `{amount, nonce}` pair for any bid that is never revealed** — if a bidder commits
+  but never calls `revealBid`, their amount and nonce stay in their local `bids` witness forever;
+  nothing forces that data on-chain, so a non-revealed bid's value is permanently unknown to any
+  observer.
+- **A bidder's real-world identity** — the contract only ever deals in `deriveBidderKey` outputs, a
+  cryptographic pseudonym scoped to `(secretKey, auctionId)`. Linking that pseudonym to a real
+  wallet address or person is outside what the contract or ledger data can reveal.
+
 ## Smart Contract Lifecycle
 
 `contract/src/secretbid.compact` exposes five circuits, called in this order for a given auction:

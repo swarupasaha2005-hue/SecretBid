@@ -100,163 +100,169 @@ export const Navbar: React.FC<NavbarProps> = ({ onConnectWallet, onNavigate, wal
           maxWidth: 'calc(100% - 32px)',
         }}
       >
-      <motion.nav
-        initial={{ y: -40, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        transition={{ duration: 0.6, ease: 'easeOut' }}
-        className="secretbid-navbar"
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          padding: '16px 8px',
-        }}
-      >
-        <div
+        <motion.nav
+          initial={{ y: -40, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          transition={{ duration: 0.6, ease: 'easeOut' }}
+          className="secretbid-navbar"
           style={{
             display: 'flex',
             alignItems: 'center',
-            gap: 12,
-            fontWeight: 700,
-            fontSize: 18,
-            color: '#FFFFFF',
-            whiteSpace: 'nowrap',
+            padding: '16px 8px',
           }}
         >
-          <motion.span
-            aria-hidden
-            animate={{ opacity: [0.6, 1, 0.6], scale: [1, 1.15, 1] }}
-            transition={{ duration: 2.4, repeat: Infinity, ease: 'easeInOut' }}
-            style={{
-              width: 10,
-              height: 10,
-              borderRadius: '50%',
-              background: `radial-gradient(circle, ${palette.softLavender} 0%, ${palette.primaryPurple} 100%)`,
-              boxShadow: `0 0 12px 2px ${palette.glow}`,
-              display: 'inline-block',
-            }}
-          />
-          SecretBid
-        </div>
-
-        <div className="secretbid-nav-links" style={{ display: 'flex', alignItems: 'center', gap: 48, marginLeft: 48 }}>
-          {NAV_LINKS.map((label) => (
-            <NavLink key={label} label={label} onClick={() => handleNavigate(label)} />
-          ))}
-        </div>
-
-        <div className="secretbid-nav-right" style={{ display: 'flex', alignItems: 'center', gap: 16, marginLeft: 48 }}>
-          {walletConnected && (
-            <span
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: 6,
-                fontSize: 13,
-                color: palette.success,
-                whiteSpace: 'nowrap',
-              }}
-            >
-              <span
-                style={{
-                  width: 7,
-                  height: 7,
-                  borderRadius: '50%',
-                  background: palette.success,
-                  boxShadow: `0 0 8px 1px ${palette.success}`,
-                }}
-              />
-              Connected
-            </span>
-          )}
-          <GradientButton variant="primary" onClick={onConnectWallet}>
-            {walletConnected ? 'Wallet' : 'Connect Wallet'}
-          </GradientButton>
-        </div>
-
-        <button
-          className="secretbid-nav-hamburger"
-          onClick={() => setMenuOpen((v) => !v)}
-          aria-label="Toggle navigation menu"
-          aria-expanded={menuOpen}
-          style={{
-            display: 'none',
-            background: 'none',
-            border: 'none',
-            cursor: 'pointer',
-            marginLeft: 20,
-            padding: 4,
-          }}
-        >
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-            <motion.span
-              animate={{ rotate: menuOpen ? 45 : 0, y: menuOpen ? 6 : 0 }}
-              style={{ width: 20, height: 2, borderRadius: 2, background: '#FFFFFF', transformOrigin: 'center' }}
-            />
-            <motion.span
-              animate={{ opacity: menuOpen ? 0 : 1 }}
-              style={{ width: 20, height: 2, borderRadius: 2, background: '#FFFFFF' }}
-            />
-            <motion.span
-              animate={{ rotate: menuOpen ? -45 : 0, y: menuOpen ? -6 : 0 }}
-              style={{ width: 20, height: 2, borderRadius: 2, background: '#FFFFFF', transformOrigin: 'center' }}
-            />
-          </div>
-        </button>
-      </motion.nav>
-
-      <AnimatePresence>
-        {menuOpen && (
           <div
             style={{
-              position: 'absolute',
-              top: '100%',
-              left: '50%',
-              transform: 'translateX(-50%)',
-              marginTop: 12,
-              zIndex: 49,
-              width: 'calc(100vw - 32px)',
-              maxWidth: 320,
+              display: 'flex',
+              alignItems: 'center',
+              gap: 12,
+              fontWeight: 700,
+              fontSize: 18,
+              color: '#FFFFFF',
+              whiteSpace: 'nowrap',
             }}
           >
-          <motion.div
-            className="secretbid-nav-mobile-menu"
-            initial={{ opacity: 0, y: -12, scale: 0.96 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: -12, scale: 0.96 }}
-            transition={{ duration: 0.2, ease: 'easeOut' }}
-            style={{
-              display: 'none',
-              flexDirection: 'column',
-              alignItems: 'center',
-              gap: 20,
-              padding: '16px 8px',
-              width: '100%',
-            }}
+            <motion.span
+              aria-hidden
+              animate={{ opacity: [0.6, 1, 0.6], scale: [1, 1.15, 1] }}
+              transition={{ duration: 2.4, repeat: Infinity, ease: 'easeInOut' }}
+              style={{
+                width: 10,
+                height: 10,
+                borderRadius: '50%',
+                background: `radial-gradient(circle, ${palette.softLavender} 0%, ${palette.primaryPurple} 100%)`,
+                boxShadow: `0 0 12px 2px ${palette.glow}`,
+                display: 'inline-block',
+              }}
+            />
+            SecretBid
+          </div>
+
+          <div
+            className="secretbid-nav-links"
+            style={{ display: 'flex', alignItems: 'center', gap: 48, marginLeft: 48 }}
           >
             {NAV_LINKS.map((label) => (
-              <button
-                key={label}
-                onClick={() => handleNavigate(label)}
+              <NavLink key={label} label={label} onClick={() => handleNavigate(label)} />
+            ))}
+          </div>
+
+          <div
+            className="secretbid-nav-right"
+            style={{ display: 'flex', alignItems: 'center', gap: 16, marginLeft: 48 }}
+          >
+            {walletConnected && (
+              <span
                 style={{
-                  background: 'none',
-                  border: 'none',
-                  cursor: 'pointer',
-                  fontFamily: 'inherit',
-                  fontSize: 16,
-                  fontWeight: 500,
-                  color: '#CFC8E9',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 6,
+                  fontSize: 13,
+                  color: palette.success,
+                  whiteSpace: 'nowrap',
                 }}
               >
-                {label}
-              </button>
-            ))}
+                <span
+                  style={{
+                    width: 7,
+                    height: 7,
+                    borderRadius: '50%',
+                    background: palette.success,
+                    boxShadow: `0 0 8px 1px ${palette.success}`,
+                  }}
+                />
+                Connected
+              </span>
+            )}
             <GradientButton variant="primary" onClick={onConnectWallet}>
               {walletConnected ? 'Wallet' : 'Connect Wallet'}
             </GradientButton>
-          </motion.div>
           </div>
-        )}
-      </AnimatePresence>
+
+          <button
+            className="secretbid-nav-hamburger"
+            onClick={() => setMenuOpen((v) => !v)}
+            aria-label="Toggle navigation menu"
+            aria-expanded={menuOpen}
+            style={{
+              display: 'none',
+              background: 'none',
+              border: 'none',
+              cursor: 'pointer',
+              marginLeft: 20,
+              padding: 4,
+            }}
+          >
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+              <motion.span
+                animate={{ rotate: menuOpen ? 45 : 0, y: menuOpen ? 6 : 0 }}
+                style={{ width: 20, height: 2, borderRadius: 2, background: '#FFFFFF', transformOrigin: 'center' }}
+              />
+              <motion.span
+                animate={{ opacity: menuOpen ? 0 : 1 }}
+                style={{ width: 20, height: 2, borderRadius: 2, background: '#FFFFFF' }}
+              />
+              <motion.span
+                animate={{ rotate: menuOpen ? -45 : 0, y: menuOpen ? -6 : 0 }}
+                style={{ width: 20, height: 2, borderRadius: 2, background: '#FFFFFF', transformOrigin: 'center' }}
+              />
+            </div>
+          </button>
+        </motion.nav>
+
+        <AnimatePresence>
+          {menuOpen && (
+            <div
+              style={{
+                position: 'absolute',
+                top: '100%',
+                left: '50%',
+                transform: 'translateX(-50%)',
+                marginTop: 12,
+                zIndex: 49,
+                width: 'calc(100vw - 32px)',
+                maxWidth: 320,
+              }}
+            >
+              <motion.div
+                className="secretbid-nav-mobile-menu"
+                initial={{ opacity: 0, y: -12, scale: 0.96 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, y: -12, scale: 0.96 }}
+                transition={{ duration: 0.2, ease: 'easeOut' }}
+                style={{
+                  display: 'none',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  gap: 20,
+                  padding: '16px 8px',
+                  width: '100%',
+                }}
+              >
+                {NAV_LINKS.map((label) => (
+                  <button
+                    key={label}
+                    onClick={() => handleNavigate(label)}
+                    style={{
+                      background: 'none',
+                      border: 'none',
+                      cursor: 'pointer',
+                      fontFamily: 'inherit',
+                      fontSize: 16,
+                      fontWeight: 500,
+                      color: '#CFC8E9',
+                    }}
+                  >
+                    {label}
+                  </button>
+                ))}
+                <GradientButton variant="primary" onClick={onConnectWallet}>
+                  {walletConnected ? 'Wallet' : 'Connect Wallet'}
+                </GradientButton>
+              </motion.div>
+            </div>
+          )}
+        </AnimatePresence>
       </div>
     </>
   );

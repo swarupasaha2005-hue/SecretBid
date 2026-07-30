@@ -157,7 +157,11 @@ export const SecretBid: React.FC<Readonly<SecretBidProps>> = ({ secretBidDeploym
             title={toShortFormatContractAddress(deployedSecretBidAPI?.deployedContractAddress) ?? 'Loading...'}
             action={
               deployedSecretBidAPI?.deployedContractAddress ? (
-                <IconButton title="Copy contract address" onClick={onCopyContractAddress}>
+                <IconButton
+                  title="Copy contract address"
+                  aria-label="Copy contract address"
+                  onClick={onCopyContractAddress}
+                >
                   <CopyIcon fontSize="small" />
                 </IconButton>
               ) : (

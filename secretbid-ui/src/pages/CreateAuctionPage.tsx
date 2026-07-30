@@ -112,7 +112,10 @@ export const CreateAuctionPage: React.FC = () => {
       <div style={{ position: 'relative', zIndex: 1 }}>
         <Navbar onConnectWallet={() => navigate('/app')} onNavigate={() => navigate('/')} />
 
-        <main className="secretbid-create-page" style={{ maxWidth: 1100, margin: '0 auto', padding: '80px 24px 120px' }}>
+        <main
+          className="secretbid-create-page"
+          style={{ maxWidth: 1100, margin: '0 auto', padding: '80px 24px 120px' }}
+        >
           {/* Page header */}
           <motion.div
             initial={{ opacity: 0, y: 16 }}
@@ -179,8 +182,13 @@ export const CreateAuctionPage: React.FC = () => {
           >
             <GlassCard hoverLift={false} style={{ padding: 'clamp(28px, 4vw, 48px)' }}>
               {isConnecting && (
-                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 16, padding: '32px 0' }}>
-                  <motion.div animate={{ rotate: 360 }} transition={{ duration: 1.1, repeat: Infinity, ease: 'linear' }}>
+                <div
+                  style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 16, padding: '32px 0' }}
+                >
+                  <motion.div
+                    animate={{ rotate: 360 }}
+                    transition={{ duration: 1.1, repeat: Infinity, ease: 'linear' }}
+                  >
                     <Loader2 size={28} color={palette.softLavender} />
                   </motion.div>
                   <p style={{ color: palette.textSecondary, fontSize: 14.5, margin: 0, textAlign: 'center' }}>
@@ -190,7 +198,9 @@ export const CreateAuctionPage: React.FC = () => {
               )}
 
               {isFailed && (
-                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 16, padding: '32px 0' }}>
+                <div
+                  style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 16, padding: '32px 0' }}
+                >
                   <p style={{ color: palette.error, fontSize: 14.5, margin: 0, textAlign: 'center' }}>
                     {deployment?.status === 'failed' ? deployment.error.message : 'Failed to connect.'}
                   </p>
@@ -203,22 +213,30 @@ export const CreateAuctionPage: React.FC = () => {
               {api && (
                 <form onSubmit={handleSubmit}>
                   <FormField
+                    id="secretbid-auction-title"
                     label="Auction Title"
                     helperText="The public name of your auction."
                     required
                   >
                     <input
+                      id="secretbid-auction-title"
                       className="secretbid-create-input"
                       value={title}
                       onChange={(e) => setTitle(e.target.value)}
                       placeholder="e.g. Rare Digital Artifact #042"
                       disabled={submitting}
                       maxLength={120}
+                      required
                     />
                   </FormField>
 
-                  <FormField label="Description" helperText="Explain what bidders are bidding for.">
+                  <FormField
+                    id="secretbid-auction-description"
+                    label="Description"
+                    helperText="Explain what bidders are bidding for."
+                  >
                     <textarea
+                      id="secretbid-auction-description"
                       className="secretbid-create-input secretbid-create-textarea"
                       value={description}
                       onChange={(e) => setDescription(e.target.value)}
@@ -229,10 +247,12 @@ export const CreateAuctionPage: React.FC = () => {
                   </FormField>
 
                   <FormField
+                    id="secretbid-auction-reserve-price"
                     label="Reserve Price (optional)"
                     helperText="Minimum acceptable bid. Leave empty if no reserve price is required."
                   >
                     <input
+                      id="secretbid-auction-reserve-price"
                       className="secretbid-create-input"
                       value={reservePrice}
                       onChange={(e) => setReservePrice(e.target.value.replace(/[^0-9]/g, ''))}
@@ -243,7 +263,9 @@ export const CreateAuctionPage: React.FC = () => {
                   </FormField>
 
                   {submitError && (
-                    <p style={{ color: palette.error, fontSize: 13.5, marginTop: -8, marginBottom: 20 }}>{submitError}</p>
+                    <p role="alert" style={{ color: palette.error, fontSize: 13.5, marginTop: -8, marginBottom: 20 }}>
+                      {submitError}
+                    </p>
                   )}
 
                   <SubmitButton type="submit" disabled={submitting || !title.trim()} loading={submitting}>
@@ -256,11 +278,7 @@ export const CreateAuctionPage: React.FC = () => {
 
           {/* Information cards */}
           <div className="secretbid-create-info-grid">
-            <InfoCard
-              icon={<Gavel size={20} color={palette.softLavender} />}
-              title="How it Works"
-              delay={0.15}
-            >
+            <InfoCard icon={<Gavel size={20} color={palette.softLavender} />} title="How it Works" delay={0.15}>
               <ol style={{ margin: 0, paddingLeft: 18, color: palette.textSecondary, fontSize: 14, lineHeight: 1.8 }}>
                 <li>Users commit hidden bids.</li>
                 <li>Bids remain private.</li>
@@ -276,7 +294,7 @@ export const CreateAuctionPage: React.FC = () => {
 
             <InfoCard icon={<Shield size={20} color={palette.softLavender} />} title="Security" delay={0.25}>
               <p style={{ margin: 0, color: palette.textSecondary, fontSize: 14, lineHeight: 1.8 }}>
-                Powered by Midnight's privacy-preserving smart contracts.
+                Powered by Midnight&apos;s privacy-preserving smart contracts.
               </p>
             </InfoCard>
           </div>
@@ -323,13 +341,15 @@ export const CreateAuctionPage: React.FC = () => {
 
 /** A single labelled form field with helper text, matching the premium glass form style. */
 const FormField: React.FC<{
+  id: string;
   label: string;
   helperText: string;
   required?: boolean;
   children: React.ReactNode;
-}> = ({ label, helperText, required, children }) => (
+}> = ({ id, label, helperText, required, children }) => (
   <div style={{ marginBottom: 26 }}>
     <label
+      htmlFor={id}
       style={{
         display: 'block',
         fontSize: 14,

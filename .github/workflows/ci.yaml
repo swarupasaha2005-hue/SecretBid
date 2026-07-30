@@ -62,3 +62,8 @@ jobs:
         working-directory: secretbid-ui
         run: |
           npm run ci
+
+      - name: Build secretbid-ui
+        working-directory: secretbid-ui
+        run: |
+          npm run build

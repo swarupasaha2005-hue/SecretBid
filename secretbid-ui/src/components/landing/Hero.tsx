@@ -130,8 +130,7 @@ export const Hero: React.FC<HeroProps> = ({ onExploreAuctions, onCreateAuction }
             display: 'block',
             width: '100%',
             height: 'auto',
-            WebkitMaskImage:
-              'radial-gradient(ellipse 62% 68% at 50% 50%, black 55%, transparent 100%)',
+            WebkitMaskImage: 'radial-gradient(ellipse 62% 68% at 50% 50%, black 55%, transparent 100%)',
             maskImage: 'radial-gradient(ellipse 62% 68% at 50% 50%, black 55%, transparent 100%)',
           }}
         />
@@ -151,7 +150,8 @@ export const Hero: React.FC<HeroProps> = ({ onExploreAuctions, onCreateAuction }
           transform: 'translate(-50%, -50%)',
           width: 'min(90%, 900px)',
           height: 'min(80%, 620px)',
-          background: 'radial-gradient(ellipse 60% 55% at 50% 50%, rgba(5,2,15,0.6) 0%, rgba(5,2,15,0.3) 55%, rgba(5,2,15,0) 80%)',
+          background:
+            'radial-gradient(ellipse 60% 55% at 50% 50%, rgba(5,2,15,0.6) 0%, rgba(5,2,15,0.3) 55%, rgba(5,2,15,0) 80%)',
           filter: 'blur(6px)',
         }}
       />
